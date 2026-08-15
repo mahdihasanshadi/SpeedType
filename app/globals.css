@@ -126,5 +126,8 @@
   }
   html {
     @apply font-sans;
+    /* Reserve the scrollbar gutter always, so content appearing (e.g. Results on test
+       completion) never narrows the viewport and reflows already-visible elements. */
+    scrollbar-gutter: stable;
   }
 }

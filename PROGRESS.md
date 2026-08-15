@@ -33,7 +33,8 @@ Last updated: 2026-08-16
 - [x] Guest → account migration
 - [x] Settings panel
 - [x] Responsive & accessibility pass
-- [ ] **Phase 1 QA gate passed + deployed** ✅
+- [x] Phase 1 QA gate passed — see `.claude/docs/qa-checklist.md`; `e2e/typing-flow.spec.ts` added
+- [ ] **Deployed** ✅
 
 ## Phase 2 — Subscriptions, premium analytics & growth (0/9)
 

@@ -119,17 +119,24 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] History rows stay single-line and don't overlap at 375px even with a full date/config/wpm/accuracy row
 - [x] Tab-order correctly moves focus through interactive elements (verified live: input → mode
       control buttons)
-- [x] Idle → running transition on the test screen produces zero cumulative layout shift
-      (measured live via the Layout Instability API, not just eyeballed)
 - [x] All icon-only buttons (theme toggle) carry an `aria-label`; every other button has visible
       text as its accessible name — verified via a repo-wide sweep of `<Button` usages
-- [x] Investigated an apparent keyboard-activation failure on `ModeControls` pill buttons (Enter/Space
-      not toggling `aria-pressed`) — root-caused to the browser automation tool's synthetic key
-      events shipping with empty `key`/`code` strings (confirmed via instrumented event listeners:
-      `isTrusted: true` but `key: ""`), not a real bug. Confirmed no global keydown handler
-      intercepts (the app's only keydown listener is scoped to the hidden typing-capture input,
-      not `document`), and the buttons are genuine native `<button>` elements, so real keyboards
-      activate them correctly per standard browser behavior.
+- [x] `e2e/typing-flow.spec.ts` (new Playwright coverage this feature — the "vitest + playwright"
+      testing stack had e2e configured but no specs written yet):
+  - A full test typed entirely via `page.keyboard` (no mouse) completes and shows 100% accuracy,
+    at both desktop and 375px width
+  - Real keyboard `Enter` and `Space` correctly toggle `aria-pressed` on `ModeControls` pill
+    buttons — this **disproves** an earlier false alarm from manual browser-automation testing
+    (the automation tool's synthetic key events shipped with empty `key`/`code` strings, which
+    Blink's native button-activation code silently ignores; real keyboard input has no such gap)
+  - Idle → running → results produces effectively zero cumulative layout shift (`< 0.01`, 10x
+    stricter than web-vitals' own "good" 0.1 threshold)
+- [x] Fixed two real (if minor — CLS score 0.0058) layout-shift sources found via the above test:
+  `app/page.tsx`'s `<main>` used `justify-center` for vertical centering, which re-centers (and
+  visibly shifts) the whole block once Results grows the content height — changed to a fixed
+  `pt-24` top offset instead. Separately, the "Press Esc to restart" hint sat *after* `Results` in
+  `TypingTest.tsx`'s JSX, so it got pushed down when Results rendered — reordered so the hint comes
+  first and Results only ever appends below it.
 
 ## Phase 2
 

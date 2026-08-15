@@ -230,6 +230,10 @@ export function TypingTest() {
         <Passage passage={passage} charStates={charStates} currentIndex={currentIndex} />
       )}
 
+      <p className="mt-8 text-small text-muted-foreground">
+        Press <kbd className="rounded border border-border px-1">Esc</kbd> to restart at any time.
+      </p>
+
       {status === "finished" && result && (
         <Results
           result={result}
@@ -237,10 +241,6 @@ export function TypingTest() {
           isGuest={sessionStatus === "unauthenticated"}
         />
       )}
-
-      <p className="mt-8 text-small text-muted-foreground">
-        Press <kbd className="rounded border border-border px-1">Esc</kbd> to restart at any time.
-      </p>
     </div>
   );
 }
