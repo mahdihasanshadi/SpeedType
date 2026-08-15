@@ -15,12 +15,16 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] The choice survives a full page reload (verified live)
 
 ### Typing test engine core
-- [ ] Net WPM matches the formula in `ux-flows.md` for a known keystroke sequence (hand-computed fixture)
-- [ ] Raw WPM includes mistyped characters, Net WPM excludes them
-- [ ] Accuracy = correct keystrokes / total keystrokes, rounded to 1 decimal
-- [ ] Consistency formula produces 100 for perfectly even per-second WPM samples, and drops for bursty input
-- [ ] Timer does not start until the first keydown
-- [ ] Test ends exactly at the configured duration (time mode) or word count (words mode)
+- [x] Net WPM matches the formula in `ux-flows.md` for a known keystroke sequence (hand-computed fixture)
+- [x] Raw WPM includes mistyped characters, Net WPM excludes them
+- [x] Accuracy = correct keystrokes / total keystrokes, rounded to 1 decimal
+- [x] Consistency formula produces 100 for perfectly even per-second WPM samples, and drops for bursty input
+- [x] Timer does not start until the first keydown
+- [x] Test ends exactly at the configured duration (time mode) or word count (words mode)
+- [x] Backspace resets the previous character to pending and moves the cursor back
+- [x] `missed` char-stat is position-based (final cursor index), not keystroke-count-based, so a corrected mistake doesn't inflate it
+- [x] Word passage generator produces exactly the requested word count; time-mode passages always have more words than a 150 WPM typist could exhaust
+- [x] Punctuation option capitalizes sentence starts and ends with a period; numbers option occasionally substitutes a digit token
 
 ### Test UI (caret, highlighting)
 - [ ] Each character renders one of `pending` / `correct` / `incorrect` — no fourth state leaks
