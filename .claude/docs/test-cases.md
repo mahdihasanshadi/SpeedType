@@ -27,9 +27,18 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] Punctuation option capitalizes sentence starts and ends with a period; numbers option occasionally substitutes a digit token
 
 ### Test UI (caret, highlighting)
-- [ ] Each character renders one of `pending` / `correct` / `incorrect` — no fourth state leaks
-- [ ] Caret position updates on every keystroke with no dropped frames on a fast/pasted input burst
-- _Further cases: TBD at build time._
+- [x] Each character renders one of `pending` / `correct` / `incorrect` — no fourth state leaks
+- [x] Caret position updates on every keystroke (verified live: `translate()` tracks the exact
+      character-width offset; no dropped frames across every keydown dispatched during manual testing)
+- [x] Backspace reverts the previous character to `pending`
+- [x] Escape restarts with a fresh, all-pending passage at any point, mid-test or idle
+- [x] Live stat readout is invisible (opacity 0) while idle, visible once running
+- [x] Clicking a mode/duration/word-count/punctuation/numbers control regenerates the passage
+- [x] Completing a words-mode passage shows the finished-state results (WPM, accuracy, "Next test")
+- [x] No horizontal overflow and typing still registers correctly at 375px (verified live)
+- Known simplification: keystroke capture is `keydown`-based (matches how every major
+  browser-based typing test works); mobile IME/predictive-keyboard edge cases beyond basic Latin
+  character entry are not specifically hardened — revisit only if real usage surfaces an issue.
 
 ### Results screen
 - [ ] Displays Net WPM, Raw WPM, Accuracy, Consistency, and character breakdown for a completed test

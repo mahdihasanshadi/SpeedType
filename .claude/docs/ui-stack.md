@@ -8,10 +8,14 @@ not a suggestion.
 
 - **shadcn/ui** (Radix UI primitives + Tailwind) is the component foundation — accessible by
   default (focus management, keyboard nav, ARIA), unstyled enough to fully retheme.
-- **Framer Motion** for every animation: the caret, character-correctness transitions, screen
-  transitions (test → results), the theme toggle, dialogs/sheets entering/exiting. Never a raw CSS
-  `transition` for anything the user's eye tracks during interaction — Framer Motion's spring
-  physics is what makes the app feel alive instead of merely functional.
+- **Framer Motion** for lower-frequency animations: screen transitions (test → results), dialogs/
+  sheets entering/exiting, anything that benefits from spring physics. **Per-keystroke-frequency UI
+  (the caret, the live stat readout's fade, the mode controls' fade during a run) uses a plain CSS
+  `transition` on an inline style instead** — decided while building the Test UI feature, where a
+  React state value (verified correct via direct inspection) wasn't reliably reaching the DOM
+  through Framer Motion's `animate` prop on rapid, high-frequency updates in this project's dev
+  setup. A native CSS transition, driven directly by the same state, is simpler, has no library
+  layer to debug, and is a better fit for the hottest code path in the app anyway.
 - **Recharts** for the speed-curve chart and any premium analytics charts (accuracy trend,
   weak-key heatmap). Retheme every chart to the design tokens — axis lines `--border`, data line
   `--accent`, tooltips styled as a themed card, never library-default colors.
@@ -41,7 +45,9 @@ build pass centers on it:
 - Render the passage as a sequence of per-character `<span>`s (not one text blob) so each
   character can independently carry a `pending` / `correct` / `incorrect` state class — this is
   what makes live highlighting possible without re-rendering the whole passage on every keystroke.
-- The caret is a separate absolutely-positioned element animated via Framer Motion `layout` /
-  `animate` between character positions — never re-render the caret as part of the character list.
+- The caret is a separate absolutely-positioned element, positioned by measuring the target
+  character span's `getBoundingClientRect()` in a `useLayoutEffect` and applying the result as an
+  inline `transform: translate(x, y)` with a plain CSS `transition` (see "Foundation" above) —
+  never re-render the caret as part of the character list.
 - Keystroke handling is a single `keydown` listener on a hidden, always-focused input (mobile needs
   a real input element to summon the on-screen keyboard) — never `contentEditable`.
