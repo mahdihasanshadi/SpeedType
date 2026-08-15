@@ -18,7 +18,7 @@ Last updated: 2026-08-16
 
 ---
 
-## Phase 1 — Core typing engine, accounts & speed curve (8/13)
+## Phase 1 — Core typing engine, accounts & speed curve (9/13)
 
 - [x] Database schema — auth, TypingTest, UserSettings
 - [x] Auth — email/password + Google OAuth + guest mode
@@ -28,7 +28,7 @@ Last updated: 2026-08-16
 - [x] Results screen
 - [x] Save test results — logged-in + guest local storage
 - [x] Test history page
-- [ ] Speed curve chart
+- [x] Speed curve chart
 - [ ] Profile / dashboard
 - [ ] Guest → account migration
 - [ ] Settings panel
