@@ -49,6 +49,7 @@ consequences. Exact order, return early on any failure:
 | Route | Concern |
 |---|---|
 | `app/api/auth/[...nextauth]` | Auth.js — session, credentials + Google OAuth |
+| `app/api/auth/signup` (POST) | Create a User with a bcrypt `passwordHash`. Not part of the NextAuth catch-all — Credentials sign-*in* only verifies, it never creates a user. |
 | `app/api/tests` (GET/POST) | List (paginated, retention-limited) / save a completed test |
 | `app/api/tests/import` (POST) | Guest → account migration, see `ux-flows.md` Flow 4 |
 | `app/api/settings` (GET/POST) | Sync typing preferences for logged-in users |

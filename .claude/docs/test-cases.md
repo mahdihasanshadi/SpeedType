@@ -28,7 +28,13 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [ ] Logged-in test POSTs to `/api/tests` without blocking the results render
 
 ### Auth
-- _TBD at build time._
+- [x] Signup creates a User with a bcrypt `passwordHash`, never the plaintext password
+- [x] Signup rejects a duplicate email with 409
+- [x] Signup rejects an invalid email / too-short password with 400
+- [x] Login with the correct password establishes a session (verified live in browser)
+- [x] Login with the wrong password shows a generic "Invalid email or password" (verified live — never reveals whether the account exists, per qa-checklist.md)
+- [x] Google OAuth button redirects to the real Google consent screen with the correct client (verified live)
+- [x] An unauthenticated visitor can load the app without any forced signup wall (guest mode)
 
 ### History / speed curve
 - _TBD at build time._
