@@ -84,8 +84,15 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] Verified live end to end: a new personal best (259 wpm) correctly overtakes an older, lower test (78 wpm); avg wpm computed correctly as their mean
 
 ### Guest → account migration
-- [ ] Signing up with N guest tests in local storage imports exactly N tests and shows that count in the toast
-- _Further cases: TBD at build time._
+- [x] Signing up with N guest tests in local storage imports exactly N tests and shows that count
+      in the toast (verified live: 3 guest tests → sign up → "Imported 3 tests from this device."
+      → local storage cleared → all 3 present via `GET /api/tests`)
+- [x] `POST /api/tests/import` rejects unauthenticated requests with 401, an empty array or more
+      than 20 tests with 400, and an unparseable `createdAt` with 400
+- [x] Imported tests preserve their original `createdAt` (when actually taken as a guest), not the import time
+- [x] Fires uniformly on any authenticated session (signup, login, or OAuth), not duplicated per page
+- [x] Does nothing when there are no guest tests to migrate, or while still unauthenticated
+- [x] Local storage is left untouched if the import request fails, so nothing is silently lost
 
 ## Phase 2
 
