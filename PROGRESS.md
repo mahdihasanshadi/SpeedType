@@ -18,10 +18,10 @@ Last updated: 2026-08-16
 
 ---
 
-## Phase 1 — Core typing engine, accounts & speed curve (1/13)
+## Phase 1 — Core typing engine, accounts & speed curve (2/13)
 
 - [x] Database schema — auth, TypingTest, UserSettings
-- [ ] Auth — email/password + Google OAuth + guest mode
+- [x] Auth — email/password + Google OAuth + guest mode
 - [ ] Design system implementation
 - [ ] Typing test engine core (passage gen, keystroke capture, WPM calc)
 - [ ] Test UI — caret, live highlighting, timer/word-count modes
