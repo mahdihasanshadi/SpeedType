@@ -69,6 +69,10 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] Guest history reads from local storage (no API call), shows an empty state and the sign-up nudge
 - [x] Logged-in history fetches from the API; Previous disabled on page 1, Next disabled when `hasMore` is false
 - [x] Verified live end to end: 3 real saved tests rendered newest-first with correct date/mode/WPM/accuracy
+- [x] Rolling 10-test average shrinks gracefully for fewer than 10 points instead of returning null
+- [x] Mode and range filters re-fetch with the correct query params (verified live: filtering to a mode with zero matching tests shows the empty state)
+- [x] Chart colors resolve to the exact design tokens, not library defaults (verified live: accent line `rgb(139,124,246)` = `#8B7CF6`, rolling-average line `rgb(155,161,170)` = `#9BA1AA`, both exact dark-mode token matches)
+- [x] `range` narrower than the 90-day retention window further excludes rows within that window; `pageSize` is capped at 200 server-side
 
 ### Guest → account migration
 - [ ] Signing up with N guest tests in local storage imports exactly N tests and shows that count in the toast

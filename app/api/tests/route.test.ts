@@ -114,4 +114,42 @@ describe("GET /api/tests", () => {
     expect(body.tests.some((t: { netWpm: number }) => t.netWpm === 999)).toBe(false);
     expect(body.hasMore).toBe(false);
   });
+
+  it("filters by mode", async () => {
+    await prisma.typingTest.create({
+      data: { ...validPayload, mode: "words", netWpm: 42, userId: getUserId },
+    });
+
+    mockAuth.mockResolvedValueOnce({ user: { id: getUserId } });
+    const res = await GET(getRequest("http://localhost/api/tests?mode=words"));
+    const body = await res.json();
+
+    expect(body.tests.every((t: { mode: string }) => t.mode === "words")).toBe(true);
+    expect(body.tests.some((t: { netWpm: number }) => t.netWpm === 42)).toBe(true);
+  });
+
+  it("a `range` narrower than the retention window excludes older rows within the window", async () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    await prisma.typingTest.create({
+      data: {
+        ...validPayload,
+        netWpm: 777,
+        userId: getUserId,
+        createdAt: new Date(Date.now() - 15 * DAY), // within 90-day retention, outside a 7d range
+      },
+    });
+
+    mockAuth.mockResolvedValueOnce({ user: { id: getUserId } });
+    const res = await GET(getRequest("http://localhost/api/tests?range=7&pageSize=200"));
+    const body = await res.json();
+
+    expect(body.tests.some((t: { netWpm: number }) => t.netWpm === 777)).toBe(false);
+  });
+
+  it("caps pageSize at 200 even if a larger value is requested", async () => {
+    mockAuth.mockResolvedValueOnce({ user: { id: getUserId } });
+    const res = await GET(getRequest("http://localhost/api/tests?pageSize=9999"));
+    const body = await res.json();
+    expect(body.pageSize).toBe(200);
+  });
 });

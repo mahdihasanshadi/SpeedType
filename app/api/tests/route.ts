@@ -22,11 +22,15 @@ const saveTestSchema = z.object({
 });
 
 const PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 200; // the speed-curve chart requests a larger page than the history list
 const FREE_TIER_RETENTION_DAYS = 90;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Every user is free-tier for now (Subscription doesn't exist until Phase 2) — the retention
 // window applies to everyone. Premium unlimited retention lands with the Phase 2 subscription
 // feature, per database-schema.md's retention note (hides old rows from the query, never deletes).
+// `mode` and `range` (days, or "all") are optional — the speed-curve chart uses both; the plain
+// history list uses neither. `range` can only narrow the window, never exceed the retention cutoff.
 export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -36,18 +40,34 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number(searchParams.get("page")) || 1);
-    const retentionCutoff = new Date(Date.now() - FREE_TIER_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const pageSize = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(1, Number(searchParams.get("pageSize")) || PAGE_SIZE),
+    );
+    const modeParam = searchParams.get("mode");
+    const mode = modeParam === "time" || modeParam === "words" ? modeParam : undefined;
+
+    const retentionCutoff = new Date(Date.now() - FREE_TIER_RETENTION_DAYS * DAY_MS);
+    let cutoff = retentionCutoff;
+    const rangeParam = searchParams.get("range");
+    if (rangeParam && rangeParam !== "all") {
+      const days = Number(rangeParam);
+      if (Number.isFinite(days) && days > 0) {
+        const rangeCutoff = new Date(Date.now() - days * DAY_MS);
+        cutoff = rangeCutoff > retentionCutoff ? rangeCutoff : retentionCutoff;
+      }
+    }
 
     const rows = await prisma.typingTest.findMany({
-      where: { userId: session.user.id, createdAt: { gte: retentionCutoff } },
+      where: { userId: session.user.id, createdAt: { gte: cutoff }, ...(mode ? { mode } : {}) },
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE + 1,
+      skip: (page - 1) * pageSize,
+      take: pageSize + 1,
       select: { id: true, mode: true, target: true, netWpm: true, accuracy: true, createdAt: true },
     });
 
-    const hasMore = rows.length > PAGE_SIZE;
-    return Response.json({ tests: rows.slice(0, PAGE_SIZE), page, pageSize: PAGE_SIZE, hasMore });
+    const hasMore = rows.length > pageSize;
+    return Response.json({ tests: rows.slice(0, pageSize), page, pageSize, hasMore });
   } catch (err) {
     console.error("[tests]", err);
     return Response.json({ error: "Something went wrong" }, { status: 500 });

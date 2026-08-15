@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { SpeedCurveChart } from "@/components/charts/SpeedCurveChart";
 import { getGuestTests, type GuestTest } from "@/lib/guest-tests";
 import type { TestMode } from "@/store/typing-store";
 
@@ -98,11 +99,16 @@ export function AuthedHistory() {
       .finally(() => setLoading(false));
   }, [page]);
 
-  if (loading && tests === null) return <HistorySkeleton />;
-
   return (
     <div>
-      {tests && tests.length === 0 && page === 1 ? (
+      <div className="mb-10">
+        <h2 className="mb-4 text-h2">Speed curve</h2>
+        <SpeedCurveChart />
+      </div>
+
+      {loading && tests === null ? (
+        <HistorySkeleton />
+      ) : tests && tests.length === 0 && page === 1 ? (
         <p className="text-muted-foreground">No tests yet — go take one.</p>
       ) : (
         <div>{tests?.map((t) => <HistoryRow key={t.id} test={t} />)}</div>
