@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { TypingTest } from "./TypingTest";
+import { saveLocalSettings, DEFAULT_LOCAL_SETTINGS } from "@/lib/local-settings";
 
 vi.mock("@/lib/texts/generate", () => ({
   generatePassage: () => "cat sat",
@@ -81,5 +82,23 @@ describe("TypingTest", () => {
     fireEvent.click(screen.getByRole("button", { name: "words" }));
 
     expect(getCharSpans().every((c) => c.getAttribute("data-state") === "pending")).toBe(true);
+  });
+
+  it("loads whatever settings were last saved for this device on mount", () => {
+    saveLocalSettings({ ...DEFAULT_LOCAL_SETTINGS, mode: "words", wordCount: 50 });
+    render(<TypingTest />);
+
+    expect(screen.getByRole("button", { name: "words" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "50" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("changing a setting persists it to local storage for next time", () => {
+    render(<TypingTest />);
+    fireEvent.click(screen.getByRole("button", { name: "words" }));
+    fireEvent.click(screen.getByRole("button", { name: "50" }));
+
+    const stored = JSON.parse(localStorage.getItem("speedtype:settings")!);
+    expect(stored.mode).toBe("words");
+    expect(stored.wordCount).toBe(50);
   });
 });

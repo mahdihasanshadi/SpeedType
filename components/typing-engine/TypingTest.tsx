@@ -5,27 +5,28 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { generatePassage } from "@/lib/texts/generate";
 import { saveGuestTest } from "@/lib/guest-tests";
-import { useTypingStore, type TestMode, type TestResult } from "@/store/typing-store";
+import {
+  DEFAULT_LOCAL_SETTINGS,
+  getLocalSettings,
+  saveLocalSettings,
+  type LocalSettings,
+} from "@/lib/local-settings";
+import { useTypingStore, type TestResult } from "@/store/typing-store";
 import { Passage } from "./Passage";
 import { StatBar } from "./StatBar";
 import { ModeControls } from "./ModeControls";
 import { Results } from "./Results";
 
-type Settings = {
-  mode: TestMode;
-  duration: number;
-  wordCount: number;
-  punctuation: boolean;
-  numbers: boolean;
-};
+type Settings = LocalSettings;
 
-const DEFAULT_SETTINGS: Settings = {
-  mode: "time",
-  duration: 30,
-  wordCount: 25,
-  punctuation: false,
-  numbers: false,
-};
+function toSettingsApiPayload(settings: Settings) {
+  return {
+    mode: settings.mode,
+    duration: settings.mode === "time" ? settings.duration : settings.wordCount,
+    punctuation: settings.punctuation,
+    numbers: settings.numbers,
+  };
+}
 
 async function postTest(payload: object): Promise<boolean> {
   try {
@@ -51,7 +52,7 @@ async function saveLoggedInResult(payload: object) {
 }
 
 export function TypingTest() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<Settings>(DEFAULT_LOCAL_SETTINGS);
   const inputRef = useRef<HTMLInputElement>(null);
   const [, forceTick] = useState(0);
   const savedResultRef = useRef<TestResult | null>(null);
@@ -80,11 +81,39 @@ export function TypingTest() {
     [settings],
   );
 
-  // Load the very first passage on mount.
+  // Load the very first passage on mount, using whatever settings were last saved for this
+  // device — a guest's or logged-in user's choices from the Settings page carry over here.
   useEffect(() => {
-    restart(DEFAULT_SETTINGS);
+    const local = getLocalSettings();
+    setSettings(local);
+    restart(local);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // For a logged-in user, the DB is the cross-device source of truth — reconcile once the
+  // session resolves. Only matters if another device changed settings since this one last synced.
+  useEffect(() => {
+    if (sessionStatus !== "authenticated") return;
+    fetch("/api/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(
+        (data: { mode?: string; duration?: number; punctuation?: boolean; numbers?: boolean } | null) => {
+          if (!data || typeof data.mode !== "string" || typeof data.duration !== "number") return;
+          const next: Settings = {
+            mode: data.mode as Settings["mode"],
+            duration: data.mode === "time" ? data.duration : DEFAULT_LOCAL_SETTINGS.duration,
+            wordCount: data.mode === "words" ? data.duration : DEFAULT_LOCAL_SETTINGS.wordCount,
+            punctuation: Boolean(data.punctuation),
+            numbers: Boolean(data.numbers),
+          };
+          setSettings(next);
+          saveLocalSettings(next);
+          if (useTypingStore.getState().status === "idle") restart(next);
+        },
+      )
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionStatus]);
 
   // Once-per-second store tick (consistency sampling + time-mode expiry) plus a faster local
   // re-render tick so the live WPM/timer readout updates smoothly, not just once a second.
@@ -126,6 +155,15 @@ export function TypingTest() {
     const next = { ...settings, ...patch };
     setSettings(next);
     restart(next);
+    saveLocalSettings(next);
+
+    if (sessionStatus === "authenticated") {
+      fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(toSettingsApiPayload(next)),
+      }).catch(() => {});
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {

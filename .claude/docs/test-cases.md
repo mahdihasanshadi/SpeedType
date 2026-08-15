@@ -94,6 +94,21 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] Does nothing when there are no guest tests to migrate, or while still unauthenticated
 - [x] Local storage is left untouched if the import request fails, so nothing is silently lost
 
+### Settings panel
+- [x] Changing a setting saves immediately, no Save button (verified live and in tests)
+- [x] Guest: setting persists to local storage across a full reload (verified live)
+- [x] Logged-in: setting also syncs to `UserSettings` via `POST /api/settings`, and survives on a
+      simulated second device — local storage cleared, page reloaded, correct values loaded from
+      the DB instead (verified live: `mode=words, duration=100, numbers=true` round-tripped exactly)
+- [x] `GET /api/settings` returns sensible defaults when no row exists yet, not null/error
+- [x] `POST /api/settings` accepts a partial update (e.g. `{theme}` alone) without clobbering the
+      other fields — the ThemeToggle uses exactly this to sync theme for a logged-in user without
+      needing to know the rest of the settings shape
+- [x] Both auth and unauth requests to `GET`/`POST /api/settings` are rejected/allowed correctly (401 gate)
+- [x] The Test UI page loads whatever settings were last saved for the device on mount, and its
+      own inline mode controls persist changes the same way as the dedicated Settings page
+- [x] ThemeToggle syncs to the server only when authenticated, never for a guest
+
 ## Phase 2
 
 _TBD at build time — pre-seed once Phase 1 ships and Phase 2 features are about to start._
