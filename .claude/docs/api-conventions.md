@@ -50,7 +50,8 @@ consequences. Exact order, return early on any failure:
 |---|---|
 | `app/api/auth/[...nextauth]` | Auth.js — session, credentials + Google OAuth |
 | `app/api/auth/signup` (POST) | Create a User with a bcrypt `passwordHash`. Not part of the NextAuth catch-all — Credentials sign-*in* only verifies, it never creates a user. |
-| `app/api/tests` (GET/POST) | List (paginated, retention-limited) / save a completed test |
+| `app/api/tests` (GET/POST) | List (paginated, retention-limited, optional `mode`/`range`/`pageSize` for the chart) / save a completed test |
+| `app/api/tests/summary` (GET) | Dashboard aggregates — personal best, all-time averages, total count, current streak |
 | `app/api/tests/import` (POST) | Guest → account migration, see `ux-flows.md` Flow 4 |
 | `app/api/settings` (GET/POST) | Sync typing preferences for logged-in users |
 | `app/api/stripe/checkout` (POST) | Create a Stripe Checkout session for the Premium plan |

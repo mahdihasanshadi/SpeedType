@@ -41,18 +41,36 @@ describe("GuestHistory", () => {
 
 describe("AuthedHistory", () => {
   beforeEach(() => {
+    // AuthedHistory renders Dashboard and SpeedCurveChart alongside the list, each hitting a
+    // different endpoint — the mock has to branch on URL rather than return one fixed shape.
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        json: () =>
-          Promise.resolve({
-            tests: [
-              { id: "1", mode: "time", target: 30, netWpm: 70, accuracy: 97, createdAt: new Date().toISOString() },
-            ],
-            page: 1,
-            pageSize: 20,
-            hasMore: true,
-          }),
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/api/tests/summary")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                personalBestWpm: 70,
+                avgWpm: 70,
+                avgAccuracy: 97,
+                totalTests: 1,
+                currentStreak: 1,
+              }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              tests: [
+                { id: "1", mode: "time", target: 30, netWpm: 70, accuracy: 97, createdAt: new Date().toISOString() },
+              ],
+              page: 1,
+              pageSize: 20,
+              hasMore: true,
+            }),
+        });
       }),
     );
   });

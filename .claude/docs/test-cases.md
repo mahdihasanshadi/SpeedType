@@ -74,6 +74,15 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] Chart colors resolve to the exact design tokens, not library defaults (verified live: accent line `rgb(139,124,246)` = `#8B7CF6`, rolling-average line `rgb(155,161,170)` = `#9BA1AA`, both exact dark-mode token matches)
 - [x] `range` narrower than the 90-day retention window further excludes rows within that window; `pageSize` is capped at 200 server-side
 
+### Profile / dashboard
+- [x] `GET /api/tests/summary` rejects unauthenticated requests with 401
+- [x] Returns `null` (not 0/NaN) for personal-best/averages when the user has zero tests, and `totalTests`/`currentStreak` as 0
+- [x] Personal best, average WPM, and total count computed correctly from real rows (verified via `_max`/`_avg`/`_count` aggregation)
+- [x] `calculateStreak`: 0 with no tests; counts today alone as 1; still counts as current if today has no test yet but yesterday does; breaks if both today and yesterday are missing; stops at the first gap; same-day duplicates count once
+- [x] Dashboard shows an em dash for null personal-best/averages rather than crashing or showing "null"
+- [x] Dashboard stays on its loading skeleton instead of crashing if the summary fetch fails or returns an error shape (a real latent bug caught by testing — the component originally assumed every response was well-formed)
+- [x] Verified live end to end: a new personal best (259 wpm) correctly overtakes an older, lower test (78 wpm); avg wpm computed correctly as their mean
+
 ### Guest → account migration
 - [ ] Signing up with N guest tests in local storage imports exactly N tests and shows that count in the toast
 - _Further cases: TBD at build time._
