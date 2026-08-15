@@ -41,7 +41,10 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
   character entry are not specifically hardened — revisit only if real usage surfaces an issue.
 
 ### Results screen
-- [ ] Displays Net WPM, Raw WPM, Accuracy, Consistency, and character breakdown for a completed test
+- [x] Displays Net WPM (headline), Raw WPM, Accuracy, Consistency, and the full correct/incorrect/
+      extra/missed character breakdown, matching `lib/wpm.ts`'s output exactly (verified live:
+      50-char passage with one deliberate mistake produced 49 correct / 1 incorrect / 0 extra / 0 missed)
+- [x] "Next test" restarts with the same mode/settings and a fresh, all-pending passage
 - [ ] Guest test writes to local storage, capped at 20 entries (oldest evicted)
 - [ ] Logged-in test POSTs to `/api/tests` without blocking the results render
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { generatePassage } from "@/lib/texts/generate";
 import { useTypingStore, type TestMode } from "@/store/typing-store";
 import { Passage } from "./Passage";
 import { StatBar } from "./StatBar";
 import { ModeControls } from "./ModeControls";
+import { Results } from "./Results";
 
 type Settings = {
   mode: TestMode;
@@ -140,21 +140,7 @@ export function TypingTest() {
         <Passage passage={passage} charStates={charStates} currentIndex={currentIndex} />
       )}
 
-      {status === "finished" && result && (
-        <div className="mt-10 flex animate-in items-center gap-8 fade-in slide-in-from-bottom-2 duration-300 ease-out">
-          <div>
-            <div className="text-stat font-mono">{Math.round(result.netWpm)}</div>
-            <div className="text-stat-label text-muted-foreground">wpm</div>
-          </div>
-          <div>
-            <div className="text-stat font-mono">{result.accuracy}%</div>
-            <div className="text-stat-label text-muted-foreground">accuracy</div>
-          </div>
-          <Button type="button" onClick={() => restart()}>
-            Next test
-          </Button>
-        </div>
-      )}
+      {status === "finished" && result && <Results result={result} onNextTest={() => restart()} />}
 
       <p className="mt-8 text-small text-muted-foreground">
         Press <kbd className="rounded border border-border px-1">Esc</kbd> to restart at any time.
