@@ -45,8 +45,13 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
       extra/missed character breakdown, matching `lib/wpm.ts`'s output exactly (verified live:
       50-char passage with one deliberate mistake produced 49 correct / 1 incorrect / 0 extra / 0 missed)
 - [x] "Next test" restarts with the same mode/settings and a fresh, all-pending passage
-- [ ] Guest test writes to local storage, capped at 20 entries (oldest evicted)
-- [ ] Logged-in test POSTs to `/api/tests` without blocking the results render
+- [x] Guest test writes to local storage, capped at 20 entries (oldest evicted, newest first)
+- [x] Logged-in test POSTs to `/api/tests` and saves the real database row (verified live end to
+      end: signup → complete a test → 201 response → row confirmed via the API's own test)
+- [x] `POST /api/tests` rejects unauthenticated requests with 401, invalid payloads with 400
+- [x] Guest sees the "Sign up to keep this" banner; logged-in users don't
+- [x] A failed save silently retries once, then surfaces a toast only if the retry also fails
+      (verified live via a stale-session edge case that hit this exact path — see infrastructure.md)
 
 ### Auth
 - [x] Signup creates a User with a bcrypt `passwordHash`, never the plaintext password

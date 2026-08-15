@@ -30,9 +30,11 @@ function BreakdownItem({
 export function Results({
   result,
   onNextTest,
+  isGuest,
 }: {
   result: TestResult;
   onNextTest: () => void;
+  isGuest?: boolean;
 }) {
   return (
     <div className="mt-10 flex animate-in flex-col gap-8 fade-in slide-in-from-bottom-2 duration-300 ease-out">
@@ -58,10 +60,18 @@ export function Results({
         />
       </div>
 
-      <div>
+      <div className="flex flex-wrap items-center gap-4">
         <Button type="button" onClick={onNextTest}>
           Next test
         </Button>
+        {isGuest && (
+          <p className="text-small text-muted-foreground">
+            <a href="/signup" className="text-foreground underline underline-offset-4">
+              Sign up
+            </a>{" "}
+            to keep this — and every test — in your speed curve forever.
+          </p>
+        )}
       </div>
     </div>
   );

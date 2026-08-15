@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { generatePassage } from "@/lib/texts/generate";
-import { useTypingStore, type TestMode } from "@/store/typing-store";
+import { saveGuestTest } from "@/lib/guest-tests";
+import { useTypingStore, type TestMode, type TestResult } from "@/store/typing-store";
 import { Passage } from "./Passage";
 import { StatBar } from "./StatBar";
 import { ModeControls } from "./ModeControls";
@@ -24,10 +27,35 @@ const DEFAULT_SETTINGS: Settings = {
   numbers: false,
 };
 
+async function postTest(payload: object): Promise<boolean> {
+  try {
+    const res = await fetch("/api/tests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Optimistic save for a logged-in user — never blocks the results render. Retries once
+ * silently; only surfaces a toast (with a manual retry action) if the retry also fails. */
+async function saveLoggedInResult(payload: object) {
+  if (await postTest(payload)) return;
+  if (await postTest(payload)) return;
+  toast.error("Couldn't save this result", {
+    action: { label: "Retry", onClick: () => saveLoggedInResult(payload) },
+  });
+}
+
 export function TypingTest() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const inputRef = useRef<HTMLInputElement>(null);
   const [, forceTick] = useState(0);
+  const savedResultRef = useRef<TestResult | null>(null);
+  const { status: sessionStatus } = useSession();
 
   const passage = useTypingStore((s) => s.passage);
   const charStates = useTypingStore((s) => s.charStates);
@@ -69,6 +97,30 @@ export function TypingTest() {
       clearInterval(displayTick);
     };
   }, [status]);
+
+  // Save the instant a test finishes — optimistic for logged-in users (never blocks the
+  // results render), local storage for guests. Guarded by ref so a re-render doesn't re-save.
+  // sessionStatus can still be "loading" the moment a test finishes (the session fetch is async
+  // and unrelated to how fast someone types) — wait for it to resolve one way or the other
+  // before marking this result as saved, otherwise a fast finish can race a slow session fetch
+  // and the result never gets saved at all.
+  useEffect(() => {
+    if (status !== "finished" || !result || savedResultRef.current === result) return;
+    if (sessionStatus === "loading") return;
+    savedResultRef.current = result;
+
+    const payload = {
+      ...result,
+      punctuation: settings.punctuation,
+      numbers: settings.numbers,
+    };
+
+    if (sessionStatus === "authenticated") {
+      void saveLoggedInResult(payload);
+    } else {
+      saveGuestTest(payload);
+    }
+  }, [status, result, sessionStatus, settings.punctuation, settings.numbers]);
 
   function handleSettingsChange(patch: Partial<Settings>) {
     const next = { ...settings, ...patch };
@@ -140,7 +192,13 @@ export function TypingTest() {
         <Passage passage={passage} charStates={charStates} currentIndex={currentIndex} />
       )}
 
-      {status === "finished" && result && <Results result={result} onNextTest={() => restart()} />}
+      {status === "finished" && result && (
+        <Results
+          result={result}
+          onNextTest={() => restart()}
+          isGuest={sessionStatus === "unauthenticated"}
+        />
+      )}
 
       <p className="mt-8 text-small text-muted-foreground">
         Press <kbd className="rounded border border-border px-1">Esc</kbd> to restart at any time.

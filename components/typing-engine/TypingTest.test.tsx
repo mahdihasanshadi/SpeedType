@@ -6,6 +6,13 @@ vi.mock("@/lib/texts/generate", () => ({
   generatePassage: () => "cat sat",
 }));
 
+// Guest by default — the logged-in save path is covered by app/api/tests/route.test.ts and the
+// retry/toast logic is simple enough to read; mocking a real SessionProvider round trip here
+// would just be testing next-auth itself.
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: null, status: "unauthenticated" }),
+}));
+
 function getInput() {
   return screen.getByLabelText("Typing test input");
 }
