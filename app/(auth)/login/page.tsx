@@ -41,7 +41,9 @@ export default function LoginPage() {
     <main className="flex min-h-full flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-h2">Log in</CardTitle>
+          <CardTitle className="text-h2">
+            <h1 className="contents">Log in</h1>
+          </CardTitle>
           <CardDescription>Pick up your speed curve where you left off.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

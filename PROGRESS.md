@@ -18,7 +18,7 @@ Last updated: 2026-08-16
 
 ---
 
-## Phase 1 — Core typing engine, accounts & speed curve (12/13)
+## Phase 1 — Core typing engine, accounts & speed curve (13/13)
 
 - [x] Database schema — auth, TypingTest, UserSettings
 - [x] Auth — email/password + Google OAuth + guest mode
@@ -32,7 +32,7 @@ Last updated: 2026-08-16
 - [x] Profile / dashboard
 - [x] Guest → account migration
 - [x] Settings panel
-- [ ] Responsive & accessibility pass
+- [x] Responsive & accessibility pass
 - [ ] **Phase 1 QA gate passed + deployed** ✅
 
 ## Phase 2 — Subscriptions, premium analytics & growth (0/9)

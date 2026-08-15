@@ -69,7 +69,7 @@ export default function SettingsPage() {
       <p className="mb-8 text-small text-muted-foreground">
         Changes save immediately — no need to press anything else.
       </p>
-      {loaded && (
+      {loaded ? (
         <ModeControls
           faded={false}
           mode={settings.mode}
@@ -79,6 +79,10 @@ export default function SettingsPage() {
           numbers={settings.numbers}
           onChange={handleChange}
         />
+      ) : (
+        // Real layout shape, not a blank gap — matches qa-checklist.md's shimmer rule and
+        // avoids the one-paint layout shift a conditional render would otherwise cause.
+        <div className="mb-8 h-8 w-full animate-pulse rounded-md bg-muted" aria-hidden />
       )}
     </main>
   );

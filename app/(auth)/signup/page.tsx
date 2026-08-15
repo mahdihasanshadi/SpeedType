@@ -55,7 +55,9 @@ export default function SignupPage() {
     <main className="flex min-h-full flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-h2">Sign up</CardTitle>
+          <CardTitle className="text-h2">
+            <h1 className="contents">Sign up</h1>
+          </CardTitle>
           <CardDescription>Start tracking your typing speed over time.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

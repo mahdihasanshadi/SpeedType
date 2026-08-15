@@ -109,6 +109,28 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
       own inline mode controls persist changes the same way as the dedicated Settings page
 - [x] ThemeToggle syncs to the server only when authenticated, never for a guest
 
+### Responsive & accessibility pass
+- [x] Home, login, signup, settings, and history all expose a real `<h1>` (verified via live DOM
+      inspection) — home's is `sr-only` since the visible title lives in the typing UI itself
+- [x] Settings page shows a real loading skeleton (not a blank gap) before mode controls hydrate
+- [x] No horizontal overflow (`scrollWidth === clientWidth`) and no clipped/off-screen interactive
+      elements at 375px on home, login, signup, settings, and history (guest view, populated with
+      8 seeded rows) — verified live via bounding-rect sweep, not just visual inspection
+- [x] History rows stay single-line and don't overlap at 375px even with a full date/config/wpm/accuracy row
+- [x] Tab-order correctly moves focus through interactive elements (verified live: input → mode
+      control buttons)
+- [x] Idle → running transition on the test screen produces zero cumulative layout shift
+      (measured live via the Layout Instability API, not just eyeballed)
+- [x] All icon-only buttons (theme toggle) carry an `aria-label`; every other button has visible
+      text as its accessible name — verified via a repo-wide sweep of `<Button` usages
+- [x] Investigated an apparent keyboard-activation failure on `ModeControls` pill buttons (Enter/Space
+      not toggling `aria-pressed`) — root-caused to the browser automation tool's synthetic key
+      events shipping with empty `key`/`code` strings (confirmed via instrumented event listeners:
+      `isTrusted: true` but `key: ""`), not a real bug. Confirmed no global keydown handler
+      intercepts (the app's only keydown listener is scoped to the hidden typing-capture input,
+      not `document`), and the buttons are genuine native `<button>` elements, so real keyboards
+      activate them correctly per standard browser behavior.
+
 ## Phase 2
 
 _TBD at build time — pre-seed once Phase 1 ships and Phase 2 features are about to start._
