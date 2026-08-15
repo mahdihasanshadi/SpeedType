@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, afterAll } from "vitest";
-import { POST } from "./route";
+import { GET, POST } from "./route";
 import { prisma } from "@/lib/prisma";
 
 const mockAuth = vi.fn();
@@ -34,7 +34,8 @@ const validPayload = {
 describe("POST /api/tests", () => {
   afterAll(async () => {
     if (userId) await prisma.user.deleteMany({ where: { id: userId } });
-    await prisma.$disconnect();
+    // No $disconnect here — the GET describe below runs afterwards in the same file and needs
+    // the client alive; disconnecting is left to that block's own afterAll.
   });
 
   it("rejects an unauthenticated request with 401", async () => {
@@ -61,5 +62,56 @@ describe("POST /api/tests", () => {
     expect(saved).toHaveLength(1);
     expect(saved[0].netWpm).toBe(72.4);
     expect(saved[0].charStats).toEqual(validPayload.charStats);
+  });
+});
+
+function getRequest(url: string) {
+  return new Request(url);
+}
+
+describe("GET /api/tests", () => {
+  const getEmail = `tests-get-route-${Date.now()}@example.test`;
+  let getUserId: string;
+
+  afterAll(async () => {
+    if (getUserId) await prisma.user.deleteMany({ where: { id: getUserId } });
+    await prisma.$disconnect();
+  });
+
+  it("rejects an unauthenticated request with 401", async () => {
+    mockAuth.mockResolvedValueOnce(null);
+    const res = await GET(getRequest("http://localhost/api/tests"));
+    expect(res.status).toBe(401);
+  });
+
+  it("returns tests newest-first, excludes rows older than 90 days, and paginates", async () => {
+    const user = await prisma.user.create({ data: { email: getEmail } });
+    getUserId = user.id;
+
+    const now = Date.now();
+    const DAY = 24 * 60 * 60 * 1000;
+    // 3 recent tests (netWpm 1, 2, 3 in creation order) + 1 test 100 days old (outside the
+    // 90-day free-tier retention window).
+    for (const [i, netWpm] of [1, 2, 3].entries()) {
+      await prisma.typingTest.create({
+        data: {
+          ...validPayload,
+          netWpm,
+          userId: getUserId,
+          createdAt: new Date(now - (3 - i) * 1000),
+        },
+      });
+    }
+    await prisma.typingTest.create({
+      data: { ...validPayload, netWpm: 999, userId: getUserId, createdAt: new Date(now - 100 * DAY) },
+    });
+
+    mockAuth.mockResolvedValueOnce({ user: { id: getUserId } });
+    const res = await GET(getRequest("http://localhost/api/tests?page=1"));
+    const body = await res.json();
+
+    expect(body.tests.map((t: { netWpm: number }) => t.netWpm)).toEqual([3, 2, 1]);
+    expect(body.tests.some((t: { netWpm: number }) => t.netWpm === 999)).toBe(false);
+    expect(body.hasMore).toBe(false);
   });
 });

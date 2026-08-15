@@ -63,7 +63,12 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 - [x] An unauthenticated visitor can load the app without any forced signup wall (guest mode)
 
 ### History / speed curve
-- _TBD at build time._
+- [x] `GET /api/tests` rejects unauthenticated requests with 401
+- [x] Returns tests newest-first, paginated (`pageSize` 20), with `hasMore` reflecting whether a next page exists
+- [x] Excludes rows older than the 90-day free-tier retention window
+- [x] Guest history reads from local storage (no API call), shows an empty state and the sign-up nudge
+- [x] Logged-in history fetches from the API; Previous disabled on page 1, Next disabled when `hasMore` is false
+- [x] Verified live end to end: 3 real saved tests rendered newest-first with correct date/mode/WPM/accuracy
 
 ### Guest → account migration
 - [ ] Signing up with N guest tests in local storage imports exactly N tests and shows that count in the toast

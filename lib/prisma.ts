@@ -12,9 +12,14 @@ const pool =
   globalForPrisma.pgPool ??
   new Pool({
     connectionString: process.env.DATABASE_URL,
-    // Neon's pooler silently drops idle connections; recycle ours first so pg.Pool never hands
-    // out a dead client (surfaces as "Connection terminated unexpectedly" otherwise).
+    // Neon's pooler silently drops idle connections. `idleTimeoutMillis` alone isn't enough —
+    // 10s is pg's own default and Neon can drop faster than that, so the client-side recycle
+    // never wins the race. `keepAliveInitialDelayMillis` is what actually matters: it makes the
+    // OS send TCP keepalive probes soon after a connection goes idle instead of following the
+    // (often multi-minute) OS default, which is what was letting Neon's proxy kill the socket
+    // out from under us between requests (reproduced live — see infrastructure.md).
     keepAlive: true,
+    keepAliveInitialDelayMillis: 10_000,
     idleTimeoutMillis: 10_000,
     max: 10,
   });
