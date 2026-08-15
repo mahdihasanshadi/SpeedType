@@ -9,6 +9,11 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
 
 ## Phase 1
 
+### Design system — theme toggle
+- [x] Toggling switches the `dark` class on `<html>` and persists the choice to `localStorage`
+- [x] No saved choice on first visit follows system `prefers-color-scheme` (verified live — light system preference rendered light, not the dark default)
+- [x] The choice survives a full page reload (verified live)
+
 ### Typing test engine core
 - [ ] Net WPM matches the formula in `ux-flows.md` for a known keystroke sequence (hand-computed fixture)
 - [ ] Raw WPM includes mistyped characters, Net WPM excludes them
