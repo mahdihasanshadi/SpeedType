@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { GuestMigration } from "@/components/providers/guest-migration";
 import { ThemeScript } from "@/components/theme-script";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Header } from "@/components/layout/Header";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <SessionProvider>
           <GuestMigration />
-          <ThemeToggle />
+          <Header />
           {children}
           <Toaster />
         </SessionProvider>

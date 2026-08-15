@@ -138,6 +138,27 @@ know the shape (Phase 1's core engine has enough detail to pre-seed a few); leav
   `TypingTest.tsx`'s JSX, so it got pushed down when Results rendered — reordered so the hint comes
   first and Results only ever appends below it.
 
+### Site header — nav + profile menu
+_Ad-hoc UI addition, not in the original Phase 1 feature list — added because the app had zero
+persistent navigation (only a floating ThemeToggle button), so a logged-in user had no visible
+indication they were signed in and no way to reach Settings/History except by typing the URL._
+- [x] Unauthenticated: header shows Log in / Sign up controls, no account menu
+- [x] Loading (session resolving): shows a skeleton, not a flash of the guest or authenticated state
+- [x] Authenticated: shows an avatar button with initials derived from the user's name (first+last
+      initial), falling back to the first two characters of their email when they have no name
+      (credentials signup's name field is optional)
+- [x] The account dropdown shows the user's name/email, and History / Settings / Sign out — Sign
+      out calls `signOut({ callbackUrl: "/" })`
+- [x] History remains reachable at 375px for guests via a compact icon-only link — the text nav is
+      desktop-only and guests have no dropdown to put it in
+- [x] No horizontal overflow at 375px with the header in either auth state
+- Real bugs caught before shipping (found via live browser testing, not just unit tests):
+  `DropdownMenuLabel` crashed the whole page with an uncaught `MenuGroupContext is missing` error
+  when used outside a `DropdownMenuGroup` — Base UI requires it, unlike some other dropdown-menu
+  implementations. Also had `nativeButton={false}` backwards on the avatar trigger — it renders a
+  `<Button>` (a real `<button>`), so it needed `nativeButton={true}` (the default), not `false`;
+  `false` is only correct where the `render` target is a non-button element like `<Link>`.
+
 ## Phase 2
 
 _TBD at build time — pre-seed once Phase 1 ships and Phase 2 features are about to start._

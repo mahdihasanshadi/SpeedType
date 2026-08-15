@@ -64,7 +64,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-16">
+    <main className="mx-auto w-full max-w-3xl px-4 pt-10 pb-16 sm:pt-16">
       <h1 className="mb-2 text-h1">Settings</h1>
       <p className="mb-8 text-small text-muted-foreground">
         Changes save immediately — no need to press anything else.

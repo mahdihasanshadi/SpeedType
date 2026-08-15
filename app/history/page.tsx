@@ -142,7 +142,7 @@ export default function HistoryPage() {
   const { status } = useSession();
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-16">
+    <main className="mx-auto w-full max-w-3xl px-4 pt-10 pb-16 sm:pt-16">
       <h1 className="mb-8 text-h1">History</h1>
       {status === "loading" ? (
         <HistorySkeleton />
