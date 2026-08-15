@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- 001_auth: standard Auth.js (NextAuth v5) Prisma adapter shape, extended with
+// passwordHash + createdAt for the Credentials provider. See database-schema.md.
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  accounts Account[]
+  sessions Session[]
+  tests    TypingTest[]
+  settings UserSettings?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- 002_typing_tests
+
+model TypingTest {
+  id          String   @id @default(cuid())
+  userId      String
+  mode        String // "time" | "words"
+  target      Int // seconds (time mode) or word count (words mode)
+  netWpm      Float
+  rawWpm      Float
+  accuracy    Float
+  consistency Float
+  charStats   Json // { correct, incorrect, extra, missed } — see lib/wpm.ts
+  punctuation Boolean  @default(false)
+  numbers     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// SECURITY / CLAUDE.md rule 3: once written, a TypingTest row's stat columns are never
+// updated by app code. If a scoring bug is fixed, it applies only to tests taken after the
+// fix — never a backfill UPDATE.
+
+// --- 003_user_settings
+
+model UserSettings {
+  userId      String  @id
+  mode        String  @default("time")
+  duration    Int     @default(30)
+  punctuation Boolean @default(false)
+  numbers     Boolean @default(false)
+  theme       String  @default("dark")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
